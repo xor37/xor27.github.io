@@ -1,0 +1,323 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="msvalidate.01" content="AD68C94074ED3981E797ADA66A7F26A2" />
+<title>mt_rand 伪随机数攻击总结 | 李西瓜🍉</title>
+<link rel="shortcut icon" href="https://xor37.github.io/favicon.ico?v=1723789260662">
+<link rel="stylesheet" href="https://xor37.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="mt_rand 伪随机数攻击总结 | 李西瓜🍉 - Atom Feed" href="https://xor37.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+<link rel='stylesheet' href='https://fonts.cdnfonts.com/css/nunito' />
+<link rel='stylesheet' href='https://chinese-fonts-cdn.deno.dev/chinesefonts3/packages/lxgwwenkai/dist/LXGWWenKai-Regular/result.css' />
+<style>
+  :root {
+    --base-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --content-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-weight: 'LXGW WenKai', 'Nunito', sans-serif !important;
+  }
+  div {
+    --base-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --content-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-family: 'LXGW WenKai', 'Nunito', sans-serif !important;
+    --heading-font-weight: 'LXGW WenKai', 'Nunito', sans-serif !important;
+  }
+  img {
+    box-shadow: none;
+  }
+</style>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z0TG0H32V"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7Z0TG0H32V');
+</script>
+
+
+    <meta name="description" content="前言
+最近同事发现验证码接口在短时间内出现两个相同的验证码的神奇情况。
+从代码中得知验证码是通过 mt_rand() 生成的随机数，遂开始了解 mt_rand() 的安全性。
+伪随机数漏洞
+
+mt_scrand()   播种 Mersenn..." />
+    <meta name="keywords" content="代码审计" />
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://xor37.github.io">
+  <img class="avatar" src="https://xor37.github.io/images/avatar.png?v=1723789260662" alt="">
+  </a>
+  <h1 class="site-title">
+    李西瓜🍉
+  </h1>
+  <p class="site-description">
+    喜欢就买 不行就分 多喝热水 少刷视频
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+        <a href="https://twitter.com/Aurey596200" target="_blank">
+          <i class="ri-twitter-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              mt_rand 伪随机数攻击总结
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-08-01
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://xor37.github.io/tag/cP3zRyEup/" class="post-tag">
+                  # 代码审计
+                </a>
+              
+            </div>
+            
+              <img class="post-feature-image" src="https://s2.loli.net/2024/08/04/JpA62jklhRouO4N.jpg" alt="">
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="前言">前言</h2>
+<p>最近同事发现验证码接口在短时间内出现两个相同的验证码的神奇情况。<br>
+从代码中得知验证码是通过 mt_rand() 生成的随机数，遂开始了解 mt_rand() 的安全性。</p>
+<h2 id="伪随机数漏洞">伪随机数漏洞</h2>
+<ul>
+<li><code>mt_scrand()</code>   播种 Mersenne Twister 随机数生成器种子。</li>
+<li><code>mt_rand()</code>     生成随机数。</li>
+</ul>
+<p>mt_rand() 每次被调用都会根据种子 seed 和当前调用的次数 i 来计算出一个伪随机数。<br>
+当种子相同时，实际上生成的伪随机数是不变的，这就是伪随机数的漏洞所在。</p>
+<h2 id="种子从哪来">种子从哪来？</h2>
+<h3 id="php-7x-80-81">PHP 7.x 8.0-8.1</h3>
+<p>PHP 在第一次使用随机数时进行 seeding，seeding 的熵仅有单一来源：系统当前的时间，单位微秒。<br>
+地址：https://github.com/php/php-src/blob/PHP-7.4.25/ext/standard/mt_rand.c</p>
+<pre><code class="language-c">PHPAPI void php_mt_srand(uint32_t seed)
+{
+  php_mt_initialize(seed, BG(state));
+  php_mt_reload();
+  BG(mt_rand_is_seeded) = 1;
+}
+
+
+PHPAPI uint32_t php_mt_rand(void)
+{
+  uint32_t s1;
+  if (UNEXPECTED(!BG(mt_rand_is_seeded))) {
+  	zend_long bytes;
+	if (php_random_bytes_silent(&amp;bytes, sizeof(zend_long)) == FAILURE) {
+		bytes = GENERATE_SEED();
+	}
+	php_mt_srand(bytes);
+}
+  if (BG(left) == 0) {
+  	php_mt_reload();
+  }
+  --BG(left);
+  s1 = *BG(next)++;
+  s1 ^= (s1 &gt;&gt; 11);
+  s1 ^= (s1 &lt;&lt;  7) &amp; 0x9d2c5680U;
+  s1 ^= (s1 &lt;&lt; 15) &amp; 0xefc60000U;
+  return ( s1 ^ (s1 &gt;&gt; 18) );
+}
+
+</code></pre>
+<h3 id="php-82-83">PHP 8.2-8.3</h3>
+<p>首先尝试通过 php_random_bytes_silent 进行 seeding，若失败回退到时间，但不太可能失败。</p>
+<h3 id="php-84未发布">PHP 8.4+（未发布）</h3>
+<p>首先尝试通过 php_random_bytes_silent 进行 seeding，若失败回退到 php_random_generate_fallback_seed。<br>
+php_random_generate_fallback_seed 的熵非常高，包含了时间，pid，ASLR地址等，几乎不可预测。</p>
+<h2 id="攻击方式">攻击方式</h2>
+<h3 id="计算种子">计算种子</h3>
+<p>地址：https://www.ambionics.io/blog/php-mt-rand-prediction<br>
+给定间隔 226 个值的两个 mt_rand() 输出结果，例如第 1 和 228 个 mt_rand() 的输出结果。<br>
+这里的栗子是：种子为 12345678，获取第 124 个随机值和第 350 （124+226）个随机值。<br>
+<img src="https://s2.loli.net/2024/08/04/MWxeqfcGzvVtaCy.png" alt="" loading="lazy"><br>
+通过大佬的脚本即可还原种子。<br>
+<img src="https://s2.loli.net/2024/08/04/8DywCIUkXV7fGbS.png" alt="" loading="lazy"></p>
+<h3 id="爆破种子">爆破种子</h3>
+<p>地址：https://github.com/openwall/php_mt_seed<br>
+只需要知道第一个随机数即可爆破出种子，有更多连续的随机数的话结果会比较准确。（这里用两个随机数就爆出来了）<br>
+<img src="https://s2.loli.net/2024/08/04/apN4IOX2fVrzHLv.png" alt="" loading="lazy"></p>
+<h3 id="爆破种子-里应外合">爆破种子 - 里应外合</h3>
+<p>地址：https://github.com/moorejacob2017/exploiting_phps_rand_function<br>
+Jacob Moore 的研究，只需要知道 pid 与生成种子时系统的时间，即可爆出种子。比较适合做后门？</p>
+<h4 id="种子的构成">种子的构成</h4>
+<p>https://github.com/php/php-src/blob/PHP-8.1/ext/standard/php_rand.h<br>
+<img src="https://s2.loli.net/2024/08/04/B7v5w26PSfUXVgR.png" alt="" loading="lazy"><br>
+run_exploit.sh 会自动获取当前进程的 pid 和系统时间，即可爆破出种子。<br>
+<img src="https://s2.loli.net/2024/08/04/K5ChELdyMIQrTge.png" alt="" loading="lazy"></p>
+<h3 id="重复随机数风险">重复随机数风险</h3>
+<p>在多进程的场景下，两个不同的请求进入同一个 pod 的两个不同的子进程，很有可能生成两个相同的种子，导致后面的随机数完全一致。例如使用 mt_rand 生成验证码的场景，你可能多次收到相同验证码。</p>
+<h2 id="加固建议">加固建议</h2>
+<p>使用 PHP 中的 random_int() 或 openssl_random_pseudo_bytes() ，这些函数是密码学安全随机数（CSPRNG），据有良好的不可预测性。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+<li><a href="#%E4%BC%AA%E9%9A%8F%E6%9C%BA%E6%95%B0%E6%BC%8F%E6%B4%9E">伪随机数漏洞</a></li>
+<li><a href="#%E7%A7%8D%E5%AD%90%E4%BB%8E%E5%93%AA%E6%9D%A5">种子从哪来？</a>
+<ul>
+<li><a href="#php-7x-80-81">PHP 7.x 8.0-8.1</a></li>
+<li><a href="#php-82-83">PHP 8.2-8.3</a></li>
+<li><a href="#php-84%E6%9C%AA%E5%8F%91%E5%B8%83">PHP 8.4+（未发布）</a></li>
+</ul>
+</li>
+<li><a href="#%E6%94%BB%E5%87%BB%E6%96%B9%E5%BC%8F">攻击方式</a>
+<ul>
+<li><a href="#%E8%AE%A1%E7%AE%97%E7%A7%8D%E5%AD%90">计算种子</a></li>
+<li><a href="#%E7%88%86%E7%A0%B4%E7%A7%8D%E5%AD%90">爆破种子</a></li>
+<li><a href="#%E7%88%86%E7%A0%B4%E7%A7%8D%E5%AD%90-%E9%87%8C%E5%BA%94%E5%A4%96%E5%90%88">爆破种子 - 里应外合</a>
+<ul>
+<li><a href="#%E7%A7%8D%E5%AD%90%E7%9A%84%E6%9E%84%E6%88%90">种子的构成</a></li>
+</ul>
+</li>
+<li><a href="#%E9%87%8D%E5%A4%8D%E9%9A%8F%E6%9C%BA%E6%95%B0%E9%A3%8E%E9%99%A9">重复随机数风险</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8A%A0%E5%9B%BA%E5%BB%BA%E8%AE%AE">加固建议</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'Ov23liYaBGZzPNFfp6VA',
+    clientSecret: '3f40675cb23924abd7f17f3c2ee9b29a719a61d7',
+    repo: 'xor37.github.io',
+    owner: 'xor37',
+    admin: ['xor37'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://xor37.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
